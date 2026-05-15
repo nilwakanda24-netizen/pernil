@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PerNil">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<title>PerNil — Powerlifting</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sbd-red: #CC1F1F;
+  --sbd-red-dark: #A01515;
+  --sbd-gold: #D4A017;
+  --bg: #0A0A0A;
+  --surface: #141414;
+  --surface2: #1E1E1E;
+  --surface3: #252525;
+  --border: rgba(255,255,255,0.08);
+  --text: #F5F3EE;
+  --muted: #666;
+  --muted2: #444;
+  --bp: #4A9EE0;
+  --sq: #4EAD6A;
+  --dl: #E07A3A;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+}
+
+/* ── APP SHELL ── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  height: -webkit-fill-available;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── STATUS BAR SPACER ── */
+.status-bar {
+  height: var(--safe-top);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+/* ── TOP HEADER ── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 10px;
+  background: var(--bg);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sbd-logo {
+  width: 36px;
+  height: 36px;
+}
+
+.app-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: .06em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.app-name span {
+  color: var(--sbd-red);
+}
+
+.header-pr {
+  display: flex;
+  gap: 8px;
+}
+
+.pr-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--surface2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-width: 44px;
+}
+
+.pr-chip-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+.pr-chip-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.pr-chip.bp .pr-chip-val { color: var(--bp); }
+.pr-chip.sq .pr-chip-val { color: var(--sq); }
+.pr-chip.dl .pr-chip-val { color: var(--dl); }
+
+/* ── WEEK TABS ── */
+.week-tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.week-tab {
+  flex: 1;
+  padding: 10px 4px 8px;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .06em;
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+  position: relative;
+}
+
+.week-tab .tab-num {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
+  color: inherit;
+}
+
+.week-tab .tab-date {
+  font-size: 9px;
+  letter-spacing: .04em;
+  opacity: .7;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+}
+
+.week-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--sbd-red);
+}
+
+.week-tab.active .tab-num {
+  color: var(--sbd-red);
+}
+
+/* ── SCROLLABLE CONTENT ── */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(16px + var(--safe-bot));
+}
+
+.page { display: none; }
+.page.active { display: block; animation: slideIn .25s ease; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── WEEK HERO ── */
+.week-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 20px 16px;
+  background: linear-gradient(135deg, #1A0505 0%, #0A0A0A 60%);
+  border-bottom: 1px solid var(--border);
+}
+
+.week-hero::before {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(204,31,31,.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.hero-week-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 52px;
+  line-height: .85;
+  color: var(--sbd-red);
+  letter-spacing: -.01em;
+}
+
+.hero-week-label small {
+  display: block;
+  font-size: 13px;
+  letter-spacing: .12em;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.hero-date-badge {
+  background: var(--sbd-red);
+  color: white;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .06em;
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+
+.hero-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.hero-intensity {
+  display: flex;
+  gap: 8px;
+}
+
+.intensity-bar {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intensity-label {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.intensity-track {
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.intensity-fill { height: 100%; border-radius: 2px; transition: width .6s ease; }
+.intensity-fill.bp { background: var(--bp); }
+.intensity-fill.sq { background: var(--sq); }
+.intensity-fill.dl { background: var(--dl); }
+
+.intensity-pct {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+.intensity-pct.bp { color: var(--bp); }
+.intensity-pct.sq { color: var(--sq); }
+.intensity-pct.dl { color: var(--dl); }
+
+/* ── SESSION SECTIONS ── */
+.session-section {
+  margin: 14px 16px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.session-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.session-header::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+}
+
+.session-section.bp .session-header::before { background: var(--bp); }
+.session-section.sq .session-header::before { background: var(--sq); }
+.session-section.dl .session-header::before { background: var(--dl); }
+
+.session-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.session-section.bp .session-icon { background: rgba(74,158,224,.15); }
+.session-section.sq .session-icon { background: rgba(78,173,106,.15); }
+.session-section.dl .session-icon { background: rgba(224,122,58,.15); }
+
+.session-title-wrap {}
+.session-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: .04em;
+  line-height: 1;
+}
+
+.session-section.bp .session-title { color: var(--bp); }
+.session-section.sq .session-title { color: var(--sq); }
+.session-section.dl .session-title { color: var(--dl); }
+
+.session-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'Barlow', sans-serif;
+}
+
+/* ── BLOCK GROUPS ── */
+.block-group {
+  border-bottom: 1px solid var(--border);
+}
+.block-group:last-child { border-bottom: none; }
+
+.block-label {
+  padding: 7px 16px 6px;
+  font-size: 9px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── EXERCISE ROW ── */
+.ex-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+  active-bg: var(--surface2);
+}
+.ex-row:last-child { border-bottom: none; }
+.ex-row:active { background: var(--surface2); }
+
+.ex-left { flex: 1; }
+.ex-name {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.2;
+}
+.ex-detail {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rpe-tag {
+  background: var(--surface3);
+  color: var(--muted);
+  font-size: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  letter-spacing: .04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.sets-info {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ex-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ex-kg {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+
+.session-section.bp .ex-kg { color: var(--bp); }
+.session-section.sq .ex-kg { color: var(--sq); }
+.session-section.dl .ex-kg { color: var(--dl); }
+
+.ex-pct {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+/* ── WEEK NOTE ── */
+.week-note-card {
+  margin: 14px 16px 0;
+  background: linear-gradient(135deg, rgba(204,31,31,.08), rgba(204,31,31,.03));
+  border: 1px solid rgba(204,31,31,.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.week-note-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .1em;
+  color: var(--sbd-red);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.week-note-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.week-note-text strong { color: var(--text); }
+
+/* ── PROGRESS BAR ── */
+.bloc-progress {
+  margin: 14px 16px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.bloc-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .1em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.bloc-track {
+  height: 5px;
+  background: var(--surface3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bloc-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sbd-red-dark), var(--sbd-red));
+  border-radius: 3px;
+  transition: width .6s ease;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 calc(8px + var(--safe-bot));
+  flex-shrink: 0;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  transition: color .2s;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.nav-item.active { color: var(--sbd-red); }
+.nav-item svg { width: 22px; height: 22px; }
+
+/* ── GLOSSARY PAGE ── */
+.glossary-page { padding: 16px; display: none; }
+.glossary-page.active { display: block; animation: slideIn .25s ease; }
+
+.glossary-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: .06em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.glossary-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+.glossary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.glossary-term {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--sbd-red);
+  letter-spacing: .04em;
+  margin-bottom: 5px;
+}
+
+.glossary-def {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.glossary-def strong { color: var(--text); }
+
+/* ── OVERVIEW PAGE ── */
+.overview-page { padding: 16px; display: none; }
+.overview-page.active { display: block; animation: slideIn .25s ease; }
+
+.overview-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+
+.overview-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+.overview-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.overview-card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.overview-card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: .05em;
+}
+
+.overview-card-title.bp { color: var(--bp); }
+.overview-card-title.sq { color: var(--sq); }
+.overview-card-title.dl { color: var(--dl); }
+
+.overview-row {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, auto);
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.overview-row:last-child { border-bottom: none; }
+
+.overview-row-head {
+  background: var(--surface2);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.overview-cell {
+  padding: 9px 10px;
+  font-size: 12px;
+  border-left: 1px solid var(--border);
+  text-align: center;
+}
+
+.overview-cell:first-child {
+  border-left: none;
+  text-align: left;
+  font-size: 12px;
+  color: var(--muted);
+  padding-left: 14px;
+}
+
+.overview-cell .kg {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.overview-cell.bp .kg { color: var(--bp); }
+.overview-cell.sq .kg { color: var(--sq); }
+.overview-cell.dl .kg { color: var(--dl); }
+
+.overview-cell .pct {
+  font-size: 9px;
+  color: var(--muted);
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="status-bar"></div>
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-logo">
+      <!-- SBD Logo SVG -->
+      <svg class="sbd-logo" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="8" fill="#CC1F1F"/>
+        <text x="18" y="14" font-family="Arial Black, sans-serif" font-size="9" font-weight="900" fill="white" text-anchor="middle" letter-spacing="1">SBD</text>
+        <!-- Barbell -->
+        <rect x="4" y="18" width="28" height="3.5" rx="1.75" fill="white" opacity=".9"/>
+        <rect x="2" y="15" width="4" height="9" rx="2" fill="white"/>
+        <rect x="30" y="15" width="4" height="9" rx="2" fill="white"/>
+        <rect x="7" y="14" width="2.5" height="11" rx="1.25" fill="white" opacity=".7"/>
+        <rect x="26.5" y="14" width="2.5" height="11" rx="1.25" fill="white" opacity=".7"/>
+        <!-- Powerlifting silhouette -->
+        <circle cx="18" cy="8" r="2" fill="white" opacity=".6"/>
+        <path d="M15 11h6l-1 5h-4z" fill="white" opacity=".6"/>
+      </svg>
+      <div class="app-name">Per<span>Nil</span></div>
+    </div>
+    <div class="header-pr">
+      <div class="pr-chip bp">
+        <div class="pr-chip-label">BP</div>
+        <div class="pr-chip-val">110</div>
+      </div>
+      <div class="pr-chip sq">
+        <div class="pr-chip-label">SQ</div>
+        <div class="pr-chip-val">155</div>
+      </div>
+      <div class="pr-chip dl">
+        <div class="pr-chip-label">DL</div>
+        <div class="pr-chip-val">192</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="page-content" id="main-scroll">
+
+    <!-- ════════ TRAINING PAGES ════════ -->
+    <div id="training-section">
+      <!-- WEEK TABS -->
+      <div class="week-tabs">
+        <button class="week-tab active" onclick="showWeek(1)">
+          <span class="tab-num">S1</span>
+          <span class="tab-date">18/05</span>
+        </button>
+        <button class="week-tab" onclick="showWeek(2)">
+          <span class="tab-num">S2</span>
+          <span class="tab-date">25/05</span>
+        </button>
+        <button class="week-tab" onclick="showWeek(3)">
+          <span class="tab-num">S3</span>
+          <span class="tab-date">01/06</span>
+        </button>
+        <button class="week-tab" onclick="showWeek(4)">
+          <span class="tab-num">S4</span>
+          <span class="tab-date">08/06</span>
+        </button>
+      </div>
+
+      <!-- ══ SETMANA 1 ══ -->
+      <div class="page active" id="week1">
+        <div class="week-hero">
+          <div class="hero-top">
+            <div class="hero-week-label"><small>SETMANA</small>01</div>
+            <div class="hero-date-badge">18 · 05 · 26</div>
+          </div>
+          <div class="hero-subtitle">Inici del bloc — Establir pesos de referència. RPE moderat, prioritat tècnica.</div>
+          <div class="hero-intensity">
+            <div class="intensity-bar">
+              <div class="intensity-label">BP max</div>
+              <div class="intensity-track"><div class="intensity-fill bp" style="width:82%"></div></div>
+              <div class="intensity-pct bp">82%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">SQ max</div>
+              <div class="intensity-track"><div class="intensity-fill sq" style="width:82%"></div></div>
+              <div class="intensity-pct sq">82%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">DL max</div>
+              <div class="intensity-track"><div class="intensity-fill dl" style="width:82%"></div></div>
+              <div class="intensity-pct dl">82%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANCA -->
+        <div class="session-section bp">
+          <div class="session-header">
+            <div class="session-icon">🏋️</div>
+            <div class="session-title-wrap">
+              <div class="session-title">BANCA</div>
+              <div class="session-subtitle">Bench Press · COMPE + BANDAS</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE — Tècnica de competició</div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Single</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">1 rep · tècnica comp</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">82.5 kg</div>
+                <div class="ex-pct">~75%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">3CT 3×2</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">3 sèries × 2 reps · pausa 3 comptes</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">90 kg</div>
+                <div class="ex-pct">~82%</div>
+              </div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">BANDAS / BANDA INVERSA</div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Bandas 4×4</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">4 sèries × 4 reps</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">77.5 kg</div>
+                <div class="ex-pct">~70%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Banda inversa 4×4</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">4 sèries × 4 reps · banda inversa</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">77.5 kg</div>
+                <div class="ex-pct">~70%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SENTADILLA -->
+        <div class="session-section sq">
+          <div class="session-header">
+            <div class="session-icon">🦵</div>
+            <div class="session-title-wrap">
+              <div class="session-title">SENTADILLA</div>
+              <div class="session-subtitle">Squat · PIN + HB (High Bar)</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">PIN — Des de pins (elimina elasticitat)</div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">4 reps — Entrada</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 5-6</span><span class="sets-info">Escalfament a pins</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">107.5 kg</div>
+                <div class="ex-pct">~69%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Top set 4-6</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Sèrie principal des de pins</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">117.5 kg</div>
+                <div class="ex-pct">~76%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Back off en HB 4-6</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off en barra alta</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">105 kg</div>
+                <div class="ex-pct">~68%</div>
+              </div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">HB — High Bar Squat</div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">2 reps</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 5-6</span><span class="sets-info">Barra alta · primera sèrie</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">120 kg</div>
+                <div class="ex-pct">~77%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">2 reps</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Barra alta · puja intensitat</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">127.5 kg</div>
+                <div class="ex-pct">~82%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PES MORT -->
+        <div class="session-section dl">
+          <div class="session-header">
+            <div class="session-icon">⚡</div>
+            <div class="session-title-wrap">
+              <div class="session-title">PES MORT</div>
+              <div class="session-subtitle">Deadlift Convencional · BLOQUES + CONV</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">BLOQUES 3CM — Rang reduït (+3cm)</div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Top set 4</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Sèrie principal des de blocs</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">157.5 kg</div>
+                <div class="ex-pct">~82%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">Back off bloques 4</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off des de blocs</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">140 kg</div>
+                <div class="ex-pct">~73%</div>
+              </div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">CONVENCIONAL — Terra</div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">4 reps</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 5-6</span><span class="sets-info">Primera sèrie</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">137.5 kg</div>
+                <div class="ex-pct">~71%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">4 reps</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Segona sèrie</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">147.5 kg</div>
+                <div class="ex-pct">~77%</div>
+              </div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left">
+                <div class="ex-name">4 reps</div>
+                <div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Sèrie final</span></div>
+              </div>
+              <div class="ex-right">
+                <div class="ex-kg">147.5 kg</div>
+                <div class="ex-pct">~77%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloc-progress">
+          <div class="bloc-progress-label"><span>PROGRÉS BLOC</span><span>1 / 4</span></div>
+          <div class="bloc-track"><div class="bloc-fill" style="width:25%"></div></div>
+        </div>
+        <div class="week-note-card">
+          <div class="week-note-title">📋 Nota setmana 1</div>
+          <div class="week-note-text">Inici del bloc. Intensitats moderades (RPE 5-7). Prioritat: establir la tècnica i trobar els pesos de referència. El <strong>single de banca</strong> ha de sortir còmode. El <strong>PIN</strong> treballes sense elasticitat del forat. Els <strong>bloques 3CM</strong> permeten usar més pes reduint el rang.</div>
+        </div>
+        <div style="height:16px"></div>
+      </div><!-- end week1 -->
+
+      <!-- ══ SETMANA 2 ══ -->
+      <div class="page" id="week2">
+        <div class="week-hero">
+          <div class="hero-top">
+            <div class="hero-week-label"><small>SETMANA</small>02</div>
+            <div class="hero-date-badge">25 · 05 · 26</div>
+          </div>
+          <div class="hero-subtitle">Puja intensitat — Apareix el bloc Pesado de sentadilla (~85%). DL tot convencional fins RPE 7-8.</div>
+          <div class="hero-intensity">
+            <div class="intensity-bar">
+              <div class="intensity-label">BP max</div>
+              <div class="intensity-track"><div class="intensity-fill bp" style="width:84%"></div></div>
+              <div class="intensity-pct bp">84%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">SQ max</div>
+              <div class="intensity-track"><div class="intensity-fill sq" style="width:85%"></div></div>
+              <div class="intensity-pct sq">85%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">DL max</div>
+              <div class="intensity-track"><div class="intensity-fill dl" style="width:84%"></div></div>
+              <div class="intensity-pct dl">84%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANCA S2 -->
+        <div class="session-section bp">
+          <div class="session-header">
+            <div class="session-icon">🏋️</div>
+            <div class="session-title-wrap">
+              <div class="session-title">BANCA</div>
+              <div class="session-subtitle">Bench Press · COMPE + BANDAS</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE — Tècnica de competició</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Single</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">1 rep</span></div></div>
+              <div class="ex-right"><div class="ex-kg">85 kg</div><div class="ex-pct">~77%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">3CT 3×2</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">3×2 · pausa 3 comptes</span></div></div>
+              <div class="ex-right"><div class="ex-kg">92.5 kg</div><div class="ex-pct">~84%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">BANDAS / BANDA INVERSA</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Bandas 4×4</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">4×4</span></div></div>
+              <div class="ex-right"><div class="ex-kg">80 kg</div><div class="ex-pct">~73%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SENTADILLA S2 -->
+        <div class="session-section sq">
+          <div class="session-header">
+            <div class="session-icon">🦵</div>
+            <div class="session-title-wrap">
+              <div class="session-title">SENTADILLA</div>
+              <div class="session-subtitle">Squat · COMPE/PIN + HB + PESADO</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE/PIN — Tèc. competició des de pins</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps — Entrada</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Des de pins</span></div></div>
+              <div class="ex-right"><div class="ex-kg">107.5 kg</div><div class="ex-pct">~69%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Top set 4-6 COMPE</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Sèrie principal</span></div></div>
+              <div class="ex-right"><div class="ex-kg">120 kg</div><div class="ex-pct">~77%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Back off a pines 4-6</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off tornant a pins</span></div></div>
+              <div class="ex-right"><div class="ex-kg">107.5 kg</div><div class="ex-pct">~69%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">HB — High Bar Squat</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">2 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 5-6</span><span class="sets-info">Barra alta</span></div></div>
+              <div class="ex-right"><div class="ex-kg">122.5 kg</div><div class="ex-pct">~79%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">2 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Barra alta</span></div></div>
+              <div class="ex-right"><div class="ex-kg">130 kg</div><div class="ex-pct">~84%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">PESADO — Sentadilla competició pesada 🔥</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">COMPE Single</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Single de competició</span></div></div>
+              <div class="ex-right"><div class="ex-kg">132.5 kg</div><div class="ex-pct">~85%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">COMPE Top set 4</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">4 reps tècnica comp</span></div></div>
+              <div class="ex-right"><div class="ex-kg">122.5 kg</div><div class="ex-pct">~79%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Back off bloques 4</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off des de blocs</span></div></div>
+              <div class="ex-right"><div class="ex-kg">110 kg</div><div class="ex-pct">~71%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PES MORT S2 -->
+        <div class="session-section dl">
+          <div class="session-header">
+            <div class="session-icon">⚡</div>
+            <div class="session-title-wrap">
+              <div class="session-title">PES MORT</div>
+              <div class="session-subtitle">Deadlift Convencional · sense bloques</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">CONVENCIONAL — Terra (sense bloques aquesta setmana)</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 5-6</span><span class="sets-info">Primera sèrie</span></div></div>
+              <div class="ex-right"><div class="ex-kg">140 kg</div><div class="ex-pct">~73%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Segona sèrie</span></div></div>
+              <div class="ex-right"><div class="ex-kg">152.5 kg</div><div class="ex-pct">~79%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">Sèrie final · màxim</span></div></div>
+              <div class="ex-right"><div class="ex-kg">162.5 kg</div><div class="ex-pct">~84%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloc-progress">
+          <div class="bloc-progress-label"><span>PROGRÉS BLOC</span><span>2 / 4</span></div>
+          <div class="bloc-track"><div class="bloc-fill" style="width:50%"></div></div>
+        </div>
+        <div class="week-note-card">
+          <div class="week-note-title">📋 Nota setmana 2</div>
+          <div class="week-note-text">Apareix el <strong>bloc Pesado</strong> de sentadilla — single COMPE al ~85% seguit de top set de 4. És la primera vegada que fas sentadilla pesada de competició del cicle. El pes mort és tot convencional sense blocs, pujant fins a RPE 7-8 (~84%).</div>
+        </div>
+        <div style="height:16px"></div>
+      </div><!-- end week2 -->
+
+      <!-- ══ SETMANA 3 ══ -->
+      <div class="page" id="week3">
+        <div class="week-hero">
+          <div class="hero-top">
+            <div class="hero-week-label"><small>SETMANA</small>03</div>
+            <div class="hero-date-badge">01 · 06 · 26</div>
+          </div>
+          <div class="hero-subtitle">Màxim volum — PIN puja a RPE 7-8. DL: COMPE Single + Bloques top set ~90%.</div>
+          <div class="hero-intensity">
+            <div class="intensity-bar">
+              <div class="intensity-label">BP max</div>
+              <div class="intensity-track"><div class="intensity-fill bp" style="width:86%"></div></div>
+              <div class="intensity-pct bp">86%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">SQ max</div>
+              <div class="intensity-track"><div class="intensity-fill sq" style="width:85%"></div></div>
+              <div class="intensity-pct sq">85%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">DL max</div>
+              <div class="intensity-track"><div class="intensity-fill dl" style="width:90%"></div></div>
+              <div class="intensity-pct dl">90%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANCA S3 -->
+        <div class="session-section bp">
+          <div class="session-header">
+            <div class="session-icon">🏋️</div>
+            <div class="session-title-wrap">
+              <div class="session-title">BANCA</div>
+              <div class="session-subtitle">Bench Press · COMPE + BANDAS</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE — Tècnica de competició</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Single</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">1 rep</span></div></div>
+              <div class="ex-right"><div class="ex-kg">87.5 kg</div><div class="ex-pct">~80%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">3CT 3×2</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">3×2 · pausa 3 comptes</span></div></div>
+              <div class="ex-right"><div class="ex-kg">95 kg</div><div class="ex-pct">~86%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">BANDAS / BANDA INVERSA</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Bandas 4×4</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">4×4</span></div></div>
+              <div class="ex-right"><div class="ex-kg">82.5 kg</div><div class="ex-pct">~75%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SENTADILLA S3 -->
+        <div class="session-section sq">
+          <div class="session-header">
+            <div class="session-icon">🦵</div>
+            <div class="session-title-wrap">
+              <div class="session-title">SENTADILLA</div>
+              <div class="session-subtitle">Squat · PIN + HB · RPE 7-8</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">PIN — Top set puja a RPE 7-8 (reps baixen)</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps — Entrada</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Des de pins</span></div></div>
+              <div class="ex-right"><div class="ex-kg">112.5 kg</div><div class="ex-pct">~73%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Top set 3-5 ⬆</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">Reps baixen → pes puja</span></div></div>
+              <div class="ex-right"><div class="ex-kg">127.5 kg</div><div class="ex-pct">~82%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Back off en HB 4-6</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off en barra alta</span></div></div>
+              <div class="ex-right"><div class="ex-kg">110 kg</div><div class="ex-pct">~71%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">HB — High Bar Squat</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">2 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 5-6</span><span class="sets-info">Barra alta</span></div></div>
+              <div class="ex-right"><div class="ex-kg">125 kg</div><div class="ex-pct">~81%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">2 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Barra alta</span></div></div>
+              <div class="ex-right"><div class="ex-kg">132.5 kg</div><div class="ex-pct">~85%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PES MORT S3 -->
+        <div class="session-section dl">
+          <div class="session-header">
+            <div class="session-icon">⚡</div>
+            <div class="session-title-wrap">
+              <div class="session-title">PES MORT</div>
+              <div class="session-subtitle">Deadlift · COMPE Single + Bloques 3CM 🔥</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE/BLOQUES — Setmana més pesada DL</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">COMPE Single</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Single convencional comp</span></div></div>
+              <div class="ex-right"><div class="ex-kg">165 kg</div><div class="ex-pct">~86%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Bloques 3CM Top set 4 ⬆</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">Top set des de blocs · màxim bloc</span></div></div>
+              <div class="ex-right"><div class="ex-kg">172.5 kg</div><div class="ex-pct">~90%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Back off bloques 4</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off des de blocs</span></div></div>
+              <div class="ex-right"><div class="ex-kg">152.5 kg</div><div class="ex-pct">~79%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">CONVENCIONAL — Terra</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 5-6</span></div></div>
+              <div class="ex-right"><div class="ex-kg">142.5 kg</div><div class="ex-pct">~74%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span></div></div>
+              <div class="ex-right"><div class="ex-kg">155 kg</div><div class="ex-pct">~81%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">Sèrie final</span></div></div>
+              <div class="ex-right"><div class="ex-kg">165 kg</div><div class="ex-pct">~86%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloc-progress">
+          <div class="bloc-progress-label"><span>PROGRÉS BLOC</span><span>3 / 4</span></div>
+          <div class="bloc-track"><div class="bloc-fill" style="width:75%"></div></div>
+        </div>
+        <div class="week-note-card">
+          <div class="week-note-title">📋 Nota setmana 3</div>
+          <div class="week-note-text">La setmana <strong>més exigent</strong> del bloc. El PIN de sentadilla puja a RPE 7-8 (menys reps, més pes). Al pes mort: COMPE Single (~86%) + bloques top set al <strong>~90% del PR</strong> (172.5 kg). Descansa bé i menja bé aquesta setmana.</div>
+        </div>
+        <div style="height:16px"></div>
+      </div><!-- end week3 -->
+
+      <!-- ══ SETMANA 4 ══ -->
+      <div class="page" id="week4">
+        <div class="week-hero">
+          <div class="hero-top">
+            <div class="hero-week-label"><small>SETMANA</small>04</div>
+            <div class="hero-date-badge">08 · 06 · 26</div>
+          </div>
+          <div class="hero-subtitle">Pic d'intensitat — Single BP a RPE 7-8. SQ Pesado ~90%. DL convencional pur fins ~87%.</div>
+          <div class="hero-intensity">
+            <div class="intensity-bar">
+              <div class="intensity-label">BP max</div>
+              <div class="intensity-track"><div class="intensity-fill bp" style="width:86%"></div></div>
+              <div class="intensity-pct bp">86%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">SQ max</div>
+              <div class="intensity-track"><div class="intensity-fill sq" style="width:90%"></div></div>
+              <div class="intensity-pct sq">90%</div>
+            </div>
+            <div class="intensity-bar">
+              <div class="intensity-label">DL max</div>
+              <div class="intensity-track"><div class="intensity-fill dl" style="width:87%"></div></div>
+              <div class="intensity-pct dl">87%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANCA S4 -->
+        <div class="session-section bp">
+          <div class="session-header">
+            <div class="session-icon">🏋️</div>
+            <div class="session-title-wrap">
+              <div class="session-title">BANCA</div>
+              <div class="session-subtitle">Bench Press · Single més pesat del bloc</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE — Single puja a RPE 7-8</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Single ⬆</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">1 rep · RPE màxim del bloc</span></div></div>
+              <div class="ex-right"><div class="ex-kg">90 kg</div><div class="ex-pct">~82%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">3CT 3×2</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">3×2 · pausa 3 comptes</span></div></div>
+              <div class="ex-right"><div class="ex-kg">95 kg</div><div class="ex-pct">~86%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">BANDAS / BANDA INVERSA</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Bandas 4×4</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">4×4</span></div></div>
+              <div class="ex-right"><div class="ex-kg">82.5 kg</div><div class="ex-pct">~75%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SENTADILLA S4 -->
+        <div class="session-section sq">
+          <div class="session-header">
+            <div class="session-icon">🦵</div>
+            <div class="session-title-wrap">
+              <div class="session-title">SENTADILLA</div>
+              <div class="session-subtitle">Squat · COMPE/PIN + HB + PESADO ~90%</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">COMPE/PIN — Des de pins</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps — Entrada</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Des de pins</span></div></div>
+              <div class="ex-right"><div class="ex-kg">115 kg</div><div class="ex-pct">~74%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Top set 3-5</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">Sèrie principal des de pins</span></div></div>
+              <div class="ex-right"><div class="ex-kg">132.5 kg</div><div class="ex-pct">~85%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Back off en HB 4-6</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span><span class="sets-info">Back-off barra alta</span></div></div>
+              <div class="ex-right"><div class="ex-kg">112.5 kg</div><div class="ex-pct">~73%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">HB — High Bar Squat</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">2 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 5-6</span></div></div>
+              <div class="ex-right"><div class="ex-kg">127.5 kg</div><div class="ex-pct">~82%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">2 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span></div></div>
+              <div class="ex-right"><div class="ex-kg">135 kg</div><div class="ex-pct">~87%</div></div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">PESADO — Single màxim del cicle 🏆</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Single 🏆</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">~90% PR · pic del cicle</span></div></div>
+              <div class="ex-right"><div class="ex-kg">140 kg</div><div class="ex-pct">~90%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">Top set 4</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">4 reps tècnica comp</span></div></div>
+              <div class="ex-right"><div class="ex-kg">127.5 kg</div><div class="ex-pct">~82%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PES MORT S4 -->
+        <div class="session-section dl">
+          <div class="session-header">
+            <div class="session-icon">⚡</div>
+            <div class="session-title-wrap">
+              <div class="session-title">PES MORT</div>
+              <div class="session-subtitle">Deadlift Convencional · tot des de terra</div>
+            </div>
+          </div>
+          <div class="block-group">
+            <div class="block-label">CONVENCIONAL — Terra (sense bloques)</div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 5-6</span></div></div>
+              <div class="ex-right"><div class="ex-kg">145 kg</div><div class="ex-pct">~75%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps</div><div class="ex-detail"><span class="rpe-tag">RPE 6-7</span></div></div>
+              <div class="ex-right"><div class="ex-kg">157.5 kg</div><div class="ex-pct">~82%</div></div>
+            </div>
+            <div class="ex-row">
+              <div class="ex-left"><div class="ex-name">4 reps ⬆</div><div class="ex-detail"><span class="rpe-tag">RPE 7-8</span><span class="sets-info">Sèrie final · màxim conv</span></div></div>
+              <div class="ex-right"><div class="ex-kg">167.5 kg</div><div class="ex-pct">~87%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloc-progress">
+          <div class="bloc-progress-label"><span>PROGRÉS BLOC</span><span>4 / 4 ✓</span></div>
+          <div class="bloc-track"><div class="bloc-fill" style="width:100%"></div></div>
+        </div>
+        <div class="week-note-card">
+          <div class="week-note-title">🏆 Nota setmana 4 — Final de bloc</div>
+          <div class="week-note-text">Pic d'intensitat. Single de banca a RPE 7-8 (90 kg). Sentadilla Pesado: <strong>single al ~90%</strong> (140 kg), el màxim del cicle. Pes mort tot convencional fins a <strong>167.5 kg</strong>. Després d'aquesta setmana: descàrrega o competició.</div>
+        </div>
+        <div style="height:16px"></div>
+      </div><!-- end week4 -->
+    </div><!-- end training-section -->
+
+    <!-- ════════ OVERVIEW PAGE ════════ -->
+    <div class="overview-page" id="overview-section">
+      <div class="overview-title">RESUM BLOC</div>
+      <div class="overview-sub">Progressió dels 4 pesos principals setmana a setmana</div>
+
+      <div class="overview-card">
+        <div class="overview-card-header">
+          <div class="overview-card-title bp">🏋️ BANCA</div>
+          <div style="font-size:11px;color:var(--muted)">PR: 110 kg</div>
+        </div>
+        <div class="overview-row overview-row-head">
+          <div class="overview-cell">Exercici</div>
+          <div class="overview-cell">S1</div>
+          <div class="overview-cell">S2</div>
+          <div class="overview-cell">S3</div>
+          <div class="overview-cell">S4</div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">COMPE Single</div>
+          <div class="overview-cell bp"><span class="kg">82.5</span><span class="pct">75%</span></div>
+          <div class="overview-cell bp"><span class="kg">85</span><span class="pct">77%</span></div>
+          <div class="overview-cell bp"><span class="kg">87.5</span><span class="pct">80%</span></div>
+          <div class="overview-cell bp"><span class="kg">90</span><span class="pct">82%</span></div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">3CT 3×2</div>
+          <div class="overview-cell bp"><span class="kg">90</span><span class="pct">82%</span></div>
+          <div class="overview-cell bp"><span class="kg">92.5</span><span class="pct">84%</span></div>
+          <div class="overview-cell bp"><span class="kg">95</span><span class="pct">86%</span></div>
+          <div class="overview-cell bp"><span class="kg">95</span><span class="pct">86%</span></div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">Bandas 4×4</div>
+          <div class="overview-cell bp"><span class="kg">77.5</span><span class="pct">70%</span></div>
+          <div class="overview-cell bp"><span class="kg">80</span><span class="pct">73%</span></div>
+          <div class="overview-cell bp"><span class="kg">82.5</span><span class="pct">75%</span></div>
+          <div class="overview-cell bp"><span class="kg">82.5</span><span class="pct">75%</span></div>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-card-header">
+          <div class="overview-card-title sq">🦵 SENTADILLA</div>
+          <div style="font-size:11px;color:var(--muted)">PR: 155 kg</div>
+        </div>
+        <div class="overview-row overview-row-head">
+          <div class="overview-cell">Exercici</div>
+          <div class="overview-cell">S1</div>
+          <div class="overview-cell">S2</div>
+          <div class="overview-cell">S3</div>
+          <div class="overview-cell">S4</div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">PIN top set</div>
+          <div class="overview-cell sq"><span class="kg">117.5</span><span class="pct">76%</span></div>
+          <div class="overview-cell sq"><span class="kg">120</span><span class="pct">77%</span></div>
+          <div class="overview-cell sq"><span class="kg">127.5</span><span class="pct">82%</span></div>
+          <div class="overview-cell sq"><span class="kg">132.5</span><span class="pct">85%</span></div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">HB 2r (alta)</div>
+          <div class="overview-cell sq"><span class="kg">127.5</span><span class="pct">82%</span></div>
+          <div class="overview-cell sq"><span class="kg">130</span><span class="pct">84%</span></div>
+          <div class="overview-cell sq"><span class="kg">132.5</span><span class="pct">85%</span></div>
+          <div class="overview-cell sq"><span class="kg">135</span><span class="pct">87%</span></div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">Pesado Single</div>
+          <div class="overview-cell sq"><span class="kg" style="color:var(--muted)">—</span></div>
+          <div class="overview-cell sq"><span class="kg">132.5</span><span class="pct">85%</span></div>
+          <div class="overview-cell sq"><span class="kg" style="color:var(--muted)">—</span></div>
+          <div class="overview-cell sq"><span class="kg">140</span><span class="pct">90%</span></div>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-card-header">
+          <div class="overview-card-title dl">⚡ PES MORT</div>
+          <div style="font-size:11px;color:var(--muted)">PR: 192.5 kg</div>
+        </div>
+        <div class="overview-row overview-row-head">
+          <div class="overview-cell">Exercici</div>
+          <div class="overview-cell">S1</div>
+          <div class="overview-cell">S2</div>
+          <div class="overview-cell">S3</div>
+          <div class="overview-cell">S4</div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">Bloques top set</div>
+          <div class="overview-cell dl"><span class="kg">157.5</span><span class="pct">82%</span></div>
+          <div class="overview-cell dl"><span class="kg" style="color:var(--muted)">—</span></div>
+          <div class="overview-cell dl"><span class="kg">172.5</span><span class="pct">90%</span></div>
+          <div class="overview-cell dl"><span class="kg" style="color:var(--muted)">—</span></div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">Conv RPE 7-8</div>
+          <div class="overview-cell dl"><span class="kg" style="color:var(--muted)">—</span></div>
+          <div class="overview-cell dl"><span class="kg">162.5</span><span class="pct">84%</span></div>
+          <div class="overview-cell dl"><span class="kg">165</span><span class="pct">86%</span></div>
+          <div class="overview-cell dl"><span class="kg">167.5</span><span class="pct">87%</span></div>
+        </div>
+        <div class="overview-row">
+          <div class="overview-cell">COMPE Single</div>
+          <div class="overview-cell dl"><span class="kg" style="color:var(--muted)">—</span></div>
+          <div class="overview-cell dl"><span class="kg" style="color:var(--muted)">—</span></div>
+          <div class="overview-cell dl"><span class="kg">165</span><span class="pct">86%</span></div>
+          <div class="overview-cell dl"><span class="kg" style="color:var(--muted)">—</span></div>
+        </div>
+      </div>
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- ════════ GLOSSARY PAGE ════════ -->
+    <div class="glossary-page" id="glossary-section">
+      <div class="glossary-title">GLOSSARI</div>
+      <div class="glossary-sub">Tots els termes tècnics del programa explicats</div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">RPE (Rate of Perceived Exertion)</div>
+        <div class="glossary-def">Escala d'esforç percebut de l'1 al 10. <strong>RPE 5-6</strong> = còmode, 4-5 reps de reserva. <strong>RPE 6-7</strong> = moderat, 3-4 reps de reserva. <strong>RPE 7-8</strong> = exigent, 2-3 reps de reserva. <strong>RPE 10</strong> = màxim absolut. No es tracta d'arribar al límit cada sèrie, sinó de respectar el rang indicat.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">COMPE (Tècnica de Competició)</div>
+        <div class="glossary-def">Execució exacta que es fa a la competició: <strong>banca amb pausa al pit</strong> fins rebre la senyal del jutge, <strong>sentadilla</strong> amb equipament i profunditat reglamentària. Serveix per automatitzar el moviment en condicions reals.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">3CT (3 Comptes / 3 Count Pause)</div>
+        <div class="glossary-def">A la banca, pausa de <strong>3 segons amb la barra al pit</strong> abans d'empènyer. En competició la pausa és ~1-2 seg (senyal del jutge), però entrenar amb 3 comptes és més exigent i millora la força des del pit. Quan arribes a comp, sembla molt més fàcil.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">PIN / Sentadilla des de pins</div>
+        <div class="glossary-def">La barra descansa sobre uns pasadors (pins) al bastidor a l'altura del forat de la sentadilla. S'inicia el moviment sense estirament elàstic, forçant producció de força pura des del punt més dèbil. <strong>Millora el forat i la força inicial</strong>.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">HB (High Bar Squat)</div>
+        <div class="glossary-def">Sentadilla amb la barra col·locada <strong>alta al trapezi</strong> en lloc de low bar (com en competició). Requereix més rang al turmell i quàdriceps. S'usa com a accessori per <strong>construir quàdriceps</strong> i millorar la postura al forat.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">Top set</div>
+        <div class="glossary-def">La <strong>sèrie principal i més pesada</strong> de l'exercici aquella sessió. S'hi arriba progressivament. Determina la intensitat del dia.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">Back off</div>
+        <div class="glossary-def">Sèries fetes <strong>després del top set, amb menys pes</strong>. Serveix per acumular volum addicional sense sobrecarregar el sistema nerviós. Típicament un 85-90% del pes del top set.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">Bloques 3CM</div>
+        <div class="glossary-def">Pes mort des de <strong>blocs que eleven la barra 3 cm del terra</strong>. Redueix el rang de moviment, permet usar més pes i treballar la fase mitja-alta. Menys estrès lumbar que el convencional. Alterna amb setmanes sense blocs.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">BANDAS / Banda inversa</div>
+        <div class="glossary-def"><strong>Bandas normals</strong>: la banda estira cap avall i afegeix resistència al dalt, sobrecarregant el bloqueig. <strong>Banda inversa</strong>: la banda estira cap amunt i alleugereix el pes al pit, permetent treballar la trajectòria amb menys tensió articular.</div>
+      </div>
+
+      <div class="glossary-card">
+        <div class="glossary-term">PESADO (bloc de sentadilla)</div>
+        <div class="glossary-def">Bloc específic de les setmanes 2 i 4 on es fa la <strong>sentadilla de competició més pesada</strong> del cicle. Inclou single + top set a altes intensitats (85-90%). És la sessió de sentadilla de referència del programa.</div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+  </div><!-- end page-content -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-train" onclick="showSection('train')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4v16M18 4v16M3 8h18M3 16h18"/></svg>
+      ENTRENA
+    </button>
+    <button class="nav-item" id="nav-overview" onclick="showSection('overview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      RESUM
+    </button>
+    <button class="nav-item" id="nav-glossary" onclick="showSection('glossary')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      GLOSSARI
+    </button>
+  </div>
+
+</div><!-- end app -->
+
+<script>
+function showWeek(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('week' + n).classList.add('active');
+  document.querySelectorAll('.week-tab')[n - 1].classList.add('active');
+  document.getElementById('main-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showSection(section) {
+  // Hide all sections
+  document.getElementById('training-section').style.display = 'none';
+  document.getElementById('overview-section').classList.remove('active');
+  document.getElementById('glossary-section').classList.remove('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  if (section === 'train') {
+    document.getElementById('training-section').style.display = 'block';
+    document.getElementById('nav-train').classList.add('active');
+  } else if (section === 'overview') {
+    document.getElementById('overview-section').classList.add('active');
+    document.getElementById('nav-overview').classList.add('active');
+  } else if (section === 'glossary') {
+    document.getElementById('glossary-section').classList.add('active');
+    document.getElementById('nav-glossary').classList.add('active');
+  }
+
+  document.getElementById('main-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

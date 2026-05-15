@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#CC1F1F"/>
+  <!-- Barbell -->
+  <rect x="20" y="88" width="152" height="16" rx="8" fill="white" opacity=".95"/>
+  <!-- Left collar -->
+  <rect x="14" y="70" width="22" height="52" rx="8" fill="white"/>
+  <!-- Right collar -->
+  <rect x="156" y="70" width="22" height="52" rx="8" fill="white"/>
+  <!-- Left plates -->
+  <rect x="38" y="62" width="14" height="68" rx="5" fill="white" opacity=".8"/>
+  <rect x="54" y="68" width="10" height="56" rx="4" fill="white" opacity=".6"/>
+  <!-- Right plates -->
+  <rect x="140" y="62" width="14" height="68" rx="5" fill="white" opacity=".8"/>
+  <rect x="128" y="68" width="10" height="56" rx="4" fill="white" opacity=".6"/>
+  <!-- SBD text -->
+  <text x="96" y="52" font-family="Arial Black, sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle" letter-spacing="4">SBD</text>
+  <!-- PerNil text -->
+  <text x="96" y="168" font-family="Arial Black, sans-serif" font-size="18" font-weight="900" fill="white" text-anchor="middle" letter-spacing="2">PerNil</text>
+</svg>
